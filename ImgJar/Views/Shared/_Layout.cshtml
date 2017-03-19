@@ -1,0 +1,45 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <link rel="icon" href="favicon.ico">
+    <title>Image jar</title>
+    @Styles.Render("~/bundles/css")
+</head>
+<body>
+    <div class="site-wrapper">
+        <div class="site-wrapper-inner">
+            <div class="cover-container">
+                <div class="masthead clearfix">
+                    <div class="inner">
+                        <h3 class="masthead-brand">Image jar</h3>
+                        <nav>
+                            <ul class="nav masthead-nav">
+                                <li class=@(ViewContext.RouteData.Values["Action"].ToString() == "Index" ? "active" : "")>@Html.ActionLink("Home", "Index", "Home")</li>
+                                <li class=@(ViewContext.RouteData.Values["Action"].ToString() == "Browse" ? "active" : "")>@Html.ActionLink("Browse", "Browse", "Home")</li>
+                                <li class=@(ViewContext.RouteData.Values["Action"].ToString() == "Contact" ? "active" : "")>@Html.ActionLink("Contact", "Contact", "Home")</li>
+                                <li class=@(ViewContext.RouteData.Values["Action"].ToString() == "Terms" ? "active" : "")>@Html.ActionLink("Terms", "Terms", "Home")</li>
+                            </ul>
+                        </nav>
+                    </div>
+                </div>
+                @RenderBody()
+                <div class="mastfoot">
+                    <div class="inner">
+                        <p>
+                            Copyright <a href="https://imgjar.co">Image jar</a>, by <a href="#">Atko</a>.
+                        </p>
+                        <p>Rendered by a <img alt="unicorn" title="unicorn" src="https://i.imgjar.co/jar/a56fDcUz4U6yz1GFNO1XLw.png"/>. Like this free service? <a href="https://www.coinbase.com/imgjar">Donate bitcoin</a> to help keep it alive.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    @Scripts.Render("~/bundles/js")
+    @RenderSection("scripts", required: false)
+</body>
+</html>

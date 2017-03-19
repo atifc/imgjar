@@ -1,0 +1,59 @@
+﻿@using System.Configuration
+@{
+    string uploadsEnabled = ConfigurationManager.AppSettings["uploadsEnabled"];
+}
+
+<div class="inner cover">
+    <h1 class="cover-heading">Drop it...</h1>
+    <p class="lead">...drop it like it's hot!</p>
+    <p>This service is in early alpha. EXIF data is not automatically removed, you should do that before uploading anything. By uploading, you agree to our @Html.ActionLink("Terms", "Terms", "Home").</p>
+
+    <p>Images uploaded in the last 30 days:</p>
+    <h1>@ViewBag.uploadedImageCount</h1>
+
+    @if (uploadsEnabled == "false")
+    {
+        <p class="alert alert-info">New uploads are temporarily disabled.</p>
+    }
+    else
+    {
+        <form action="/upload" id="imgJarUploadForm" class="imgjardropzone">
+            <div class="dz-message" data-dz-message>
+                <div class="hot">
+                    To upload, drop a file here or click this.
+                </div>
+            </div>
+        </form>
+        <div id="upload-results" style="display: none;">
+            <br>
+            <p class="lead">Here is the url to the thing you just uploaded:</p>
+            <div class="input-group">
+                <span class="input-group-addon">url</span>
+                <input id="uploadedUrl" onclick="this.select();" class="form-control shareFields" value="share url" readonly="" type="text">
+            </div>
+            <br />
+            <div class="input-group">
+                <span class="input-group-addon">removal url</span>
+                <input id="removalUrl" onclick="this.select();" class="form-control shareFields" value="removal url" readonly="" type="text">
+            </div>
+        </div>
+        <div id="upload-results-error" style="display: none;">
+            <br>
+            <p class="lead" style="color: red">Something went bad and your thing failed to upload. Please try again later.</p>
+        </div>
+    }
+</div>
+
+<div id="template">
+    <div class="dz-preview dz-file-preview">
+        <div class="dz-details">
+            <div class="dz-filename"><span data-dz-name></span></div>
+            <div class="dz-size" data-dz-size></div>
+            <img data-dz-thumbnail />
+        </div>
+        <div class="dz-progress"><span class="dz-upload" data-dz-uploadprogress></span></div>
+        <div class="dz-success-mark"><span></span></div>
+        <div class="dz-error-mark"><span></span></div>
+        <div class="dz-error-message"><span data-dz-errormessage></span></div>
+    </div>
+</div>
