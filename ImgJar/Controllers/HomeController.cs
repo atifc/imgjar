@@ -3,6 +3,8 @@ using System.Linq;
 using System.Runtime.Caching;
 using System.Web.Mvc;
 using ImgJar.Models;
+using ImgJar.Services;
+using ImgJar.Services.Models;
 using Microsoft.Azure;
 using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Table;
@@ -17,6 +19,8 @@ namespace ImgJar.Controllers
         public ActionResult Index()
         {
             var uploadedImageCount = _cache["uploadedImageCount"];
+            Quote qotd = (Quote) _cache["qotd"];
+
             if (uploadedImageCount == null)
             {
                 lock (_lock)
@@ -40,6 +44,21 @@ namespace ImgJar.Controllers
                 }
             }
 
+            if (qotd == null)
+            {
+                try
+                {
+                    qotd = QuoteOfTheDayService.GetQotd();
+                    _cache.Set("qotd", qotd, DateTimeOffset.Now.AddMinutes(60));
+                }
+                catch (Exception)
+                {
+                    // swallowing exceptions like a boss
+                    // fetching the qotd failed but since it is just a gizmo, we'll ignore this exception
+                }
+            }
+
+            ViewBag.Qotd = qotd;
             ViewBag.uploadedImageCount = uploadedImageCount;
 
             return View();
