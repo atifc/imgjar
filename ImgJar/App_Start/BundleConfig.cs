@@ -13,7 +13,6 @@ namespace ImgJar
 
             bundles.Add(new ScriptBundle("~/bundles/js").Include(
                       "~/js/vendor/dropzonejs/dropzone.js",
-                      "~/js/vendor/spin.js",
                       "~/js/imgjar.js"
                       ));
 
