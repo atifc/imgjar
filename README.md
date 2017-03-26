@@ -9,7 +9,6 @@ Imgjar is a mobile-friendly image hosting service with focus on easy of use. Use
 
 ## JavaScript libraries
 - [Dropzone JS](http://www.dropzonejs.com)
-- [Spin JS](http://spin.js.org/)
 
 ## Other HTML, CSS, and JS frameworks
 - [Bootstrap](http://getbootstrap.com/)
