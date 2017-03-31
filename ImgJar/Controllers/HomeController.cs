@@ -7,36 +7,36 @@ using ImgJar.Services;
 using ImgJar.Services.Models;
 using Microsoft.Azure;
 using Microsoft.WindowsAzure.Storage;
-using Microsoft.WindowsAzure.Storage.Table;
 
 namespace ImgJar.Controllers
 {
     public class HomeController : Controller
     {
-        private ObjectCache _cache = MemoryCache.Default;
-        private object _lock = new object();
+        private readonly ObjectCache _cache = MemoryCache.Default;
+        private readonly object _lock = new object();
 
         public ActionResult Index()
         {
             var uploadedImageCount = _cache["uploadedImageCount"];
-            Quote qotd = (Quote) _cache["qotd"];
+            var qotd = (Quote) _cache["qotd"];
 
             if (uploadedImageCount == null)
             {
                 lock (_lock)
                 {
+                    // TODO: move this out from the controller
                     uploadedImageCount = 0;
-                    CloudStorageAccount storageAccount = CloudStorageAccount.Parse(CloudConfigurationManager.GetSetting("StorageConnectionString"));
-                    CloudTableClient tableClient = storageAccount.CreateCloudTableClient();
-                    CloudTable table = tableClient.GetTableReference("uploads");
+                    var storageAccount = CloudStorageAccount.Parse(CloudConfigurationManager.GetSetting("StorageConnectionString"));
+                    var tableClient = storageAccount.CreateCloudTableClient();
+                    var table = tableClient.GetTableReference("uploads");
 
                     var query = table.CreateQuery<UploadedEntity>().Where(d => d.PartitionKey == "2017" && d.CreateDate >= DateTime.UtcNow.AddDays(-30)
                                 && d.CreateDate <= DateTime.UtcNow);
-                    var entityToDelete = query.ToList();
+                    var uploadedImages = query.ToList();
 
-                    if (entityToDelete.Any())
+                    if (uploadedImages.Any())
                     {
-                        uploadedImageCount = entityToDelete.Count;
+                        uploadedImageCount = uploadedImages.Count;
                     }
 
                     _cache.Set("uploadedImageCount", uploadedImageCount, DateTimeOffset.Now.AddMinutes(60));

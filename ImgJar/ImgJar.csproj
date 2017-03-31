@@ -156,9 +156,11 @@
     </Compile>
     <Compile Include="Models\UploadedEntity.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Services\BlobStorageService.cs" />
     <Compile Include="Services\Models\QotdResponse.cs" />
     <Compile Include="Services\Models\Quote.cs" />
     <Compile Include="Services\QuoteOfTheDayService.cs" />
+    <Compile Include="Services\TableStorageService.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="css\imgjar.css" />
