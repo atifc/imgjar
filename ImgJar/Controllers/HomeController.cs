@@ -29,8 +29,8 @@ namespace ImgJar.Controllers
 
                     _cache.Set("uploadedImageCount", uploadedImageCount, DateTimeOffset.Now.AddMinutes(60));
                     uploadedImageCount = _cache["uploadedImageCount"];
-                    ViewBag.uploadedImageCount = uploadedImageCount;
                 }
+                ViewBag.uploadedImageCount = uploadedImageCount;
             }
 
             lock (_lock)
@@ -42,14 +42,14 @@ namespace ImgJar.Controllers
                     {
                         qotd = QuoteOfTheDayService.GetQotd();
                         _cache.Set("qotd", qotd, DateTimeOffset.Now.AddMinutes(60));
-                        ViewBag.Qotd = qotd;
                     }
-                    catch (Exception)
+                    catch (Exception ex)
                     {
                         // swallowing exceptions like a boss
                         // fetching the qotd failed but since it is just a gizmo, we'll ignore this exception
                     }
                 }
+                ViewBag.Qotd = qotd;
             }
 
             return View();

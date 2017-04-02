@@ -171,7 +171,6 @@
     <Content Include="js\imgjar.js" />
     <Content Include="js\vendor\bootstrap.min.js" />
     <Content Include="js\vendor\dropzonejs\dropzone.js" />
-    <Content Include="upload\placeholder.txt" />
     <Content Include="Web.config" />
     <Content Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>

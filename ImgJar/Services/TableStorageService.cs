@@ -107,7 +107,7 @@ namespace ImgJar.Services
                 table.Execute(deleteOperation);
                 return true;
             }
-            catch (Exception)
+            catch (Exception ex)
             {
                 // TODO: log failed record delete attempt
                 return false;

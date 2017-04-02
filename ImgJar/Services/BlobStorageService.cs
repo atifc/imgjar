@@ -77,7 +77,7 @@ namespace ImgJar.Services
                 blockBlob.Delete();
                 return true;
             }
-            catch (Exception)
+            catch (Exception ex)
             {
                 // TODO: log failed delete operation
                 return false;

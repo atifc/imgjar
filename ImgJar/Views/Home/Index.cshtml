@@ -5,8 +5,6 @@
 }
 
 <div class="inner cover">
-    <h1 class="cover-heading">Drop it...</h1>
-    <p class="lead">...drop it like it's hot!</p>
     @if (qotd != null)
     {
         <blockquote>
@@ -15,9 +13,6 @@
         <p align="right">- @ViewBag.Qotd.author</p>
     }
     <p>This service is in early alpha. EXIF data is not automatically removed, you should do that before uploading anything. By uploading, you agree to our @Html.ActionLink("Terms", "Terms", "Home").</p>
-
-    <p>Images uploaded in the last 30 days:</p>
-    <h1>@ViewBag.uploadedImageCount</h1>
 
     @if (uploadsEnabled == "false")
     {
@@ -57,7 +52,7 @@
         <div class="dz-details">
             <div class="dz-filename"><span data-dz-name></span></div>
             <div class="dz-size" data-dz-size></div>
-            <img data-dz-thumbnail />
+            <img data-dz-thumbnail/>
         </div>
         <div class="dz-progress"><span class="dz-upload" data-dz-uploadprogress></span></div>
         <div class="dz-success-mark"><span></span></div>
@@ -65,3 +60,5 @@
         <div class="dz-error-message"><span data-dz-errormessage></span></div>
     </div>
 </div>
+<br/>
+<p>Images uploaded in the last 30 days: <strong>@ViewBag.uploadedImageCount</strong></p>
