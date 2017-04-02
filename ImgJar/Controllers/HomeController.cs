@@ -2,11 +2,8 @@
 using System.Linq;
 using System.Runtime.Caching;
 using System.Web.Mvc;
-using ImgJar.Models;
 using ImgJar.Services;
 using ImgJar.Services.Models;
-using Microsoft.Azure;
-using Microsoft.WindowsAzure.Storage;
 
 namespace ImgJar.Controllers
 {
@@ -24,16 +21,8 @@ namespace ImgJar.Controllers
             {
                 lock (_lock)
                 {
-                    // TODO: move this out from the controller
                     uploadedImageCount = 0;
-                    var storageAccount = CloudStorageAccount.Parse(CloudConfigurationManager.GetSetting("StorageConnectionString"));
-                    var tableClient = storageAccount.CreateCloudTableClient();
-                    var table = tableClient.GetTableReference("uploads");
-
-                    var query = table.CreateQuery<UploadedEntity>().Where(d => d.PartitionKey == "2017" && d.CreateDate >= DateTime.UtcNow.AddDays(-30)
-                                && d.CreateDate <= DateTime.UtcNow);
-                    var uploadedImages = query.ToList();
-
+                    var uploadedImages = TableStorageService.GetUploadedEntitiesByPartitionAndAge("2017", 30);
                     if (uploadedImages.Any())
                     {
                         uploadedImageCount = uploadedImages.Count;

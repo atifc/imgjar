@@ -20,7 +20,7 @@ namespace ImgJar.Controllers
             }
 
             var userIp = Request.Headers["CF-CONNECTING-IP"] ?? Request.UserHostAddress;
-            var blobReference = BlobStorageService.GetBlobReference(file, userIp);
+            var blobReference = BlobStorageService.SaveBlob(file, userIp);
             var insertResult = TableStorageService.InsertUploadResult(blobReference, removalKey, userIp, file.ContentType);
             if (insertResult == 204)
             {
