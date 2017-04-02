@@ -14,12 +14,11 @@ namespace ImgJar.Controllers
 
         public ActionResult Index()
         {
-            var uploadedImageCount = _cache["uploadedImageCount"];
-            var qotd = (Quote) _cache["qotd"];
-
-            if (uploadedImageCount == null)
+            lock (_lock)
             {
-                lock (_lock)
+                var uploadedImageCount = _cache["uploadedImageCount"];
+
+                if (uploadedImageCount == null)
                 {
                     uploadedImageCount = 0;
                     var uploadedImages = TableStorageService.GetUploadedEntitiesByPartitionAndAge("2017", 30);
@@ -30,25 +29,28 @@ namespace ImgJar.Controllers
 
                     _cache.Set("uploadedImageCount", uploadedImageCount, DateTimeOffset.Now.AddMinutes(60));
                     uploadedImageCount = _cache["uploadedImageCount"];
+                    ViewBag.uploadedImageCount = uploadedImageCount;
                 }
             }
 
-            if (qotd == null)
+            lock (_lock)
             {
-                try
+                var qotd = (Quote)_cache["qotd"];
+                if (qotd == null)
                 {
-                    qotd = QuoteOfTheDayService.GetQotd();
-                    _cache.Set("qotd", qotd, DateTimeOffset.Now.AddMinutes(60));
-                }
-                catch (Exception)
-                {
-                    // swallowing exceptions like a boss
-                    // fetching the qotd failed but since it is just a gizmo, we'll ignore this exception
+                    try
+                    {
+                        qotd = QuoteOfTheDayService.GetQotd();
+                        _cache.Set("qotd", qotd, DateTimeOffset.Now.AddMinutes(60));
+                        ViewBag.Qotd = qotd;
+                    }
+                    catch (Exception)
+                    {
+                        // swallowing exceptions like a boss
+                        // fetching the qotd failed but since it is just a gizmo, we'll ignore this exception
+                    }
                 }
             }
-
-            ViewBag.Qotd = qotd;
-            ViewBag.uploadedImageCount = uploadedImageCount;
 
             return View();
         }
