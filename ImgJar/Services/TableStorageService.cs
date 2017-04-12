@@ -5,12 +5,15 @@ using ImgJar.Models;
 using Microsoft.Azure;
 using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Table;
+using NLog;
+using LogLevel = NLog.LogLevel;
 
 namespace ImgJar.Services
 {
     public class TableStorageService
     {
         private static readonly CloudStorageAccount StorageAccount = CloudStorageAccount.Parse(CloudConfigurationManager.GetSetting("StorageConnectionString"));
+        private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
         /// <summary>
         /// Registers blob upload result in azure table storage
@@ -22,20 +25,28 @@ namespace ImgJar.Services
         /// <returns></returns>
         public static int InsertUploadResult(string blobReference, Guid removalKey, string userIp, string contentType)
         {
-            var tableClient = StorageAccount.CreateCloudTableClient();
-            var table = tableClient.GetTableReference("uploads");
-            table.CreateIfNotExists();
-
-            var uploadedEntity = new UploadedEntity("2017", blobReference)
+            try
             {
-                CreateDate = DateTime.UtcNow,
-                ContentType = contentType,
-                UploaderIp = userIp,
-                RemovalKey = removalKey
-            };
+                var tableClient = StorageAccount.CreateCloudTableClient();
+                var table = tableClient.GetTableReference("uploads");
+                table.CreateIfNotExists();
 
-            var insertOperation = TableOperation.Insert(uploadedEntity);
-            return table.Execute(insertOperation).HttpStatusCode;
+                var uploadedEntity = new UploadedEntity("2017", blobReference)
+                {
+                    CreateDate = DateTime.UtcNow,
+                    ContentType = contentType,
+                    UploaderIp = userIp,
+                    RemovalKey = removalKey
+                };
+
+                var insertOperation = TableOperation.Insert(uploadedEntity);
+                return table.Execute(insertOperation).HttpStatusCode;
+            }
+            catch (Exception ex)
+            {
+                Logger.Log(LogLevel.Error, "InsertUploadResult failed: " + ex);
+                throw;
+            }
         }
 
         /// <summary>
@@ -46,15 +57,23 @@ namespace ImgJar.Services
         /// <returns></returns>
         public static List<UploadedEntity> GetUploadedEntitiesByPartitionAndAge(string partitionKey, int ageInDays)
         {
-            var tableClient = StorageAccount.CreateCloudTableClient();
-            var table = tableClient.GetTableReference("uploads");
+            try
+            {
+                var tableClient = StorageAccount.CreateCloudTableClient();
+                var table = tableClient.GetTableReference("uploads");
 
-            var query = table.CreateQuery<UploadedEntity>()
-                .Where(d => d.PartitionKey == partitionKey && d.CreateDate >= DateTime.UtcNow.AddDays(-ageInDays)
-                && d.CreateDate <= DateTime.UtcNow);
+                var query = table.CreateQuery<UploadedEntity>()
+                    .Where(d => d.PartitionKey == partitionKey && d.CreateDate >= DateTime.UtcNow.AddDays(-ageInDays)
+                    && d.CreateDate <= DateTime.UtcNow);
 
-            var uploadedImages = query.ToList();
-            return uploadedImages;
+                var uploadedImages = query.ToList();
+                return uploadedImages;
+            }
+            catch (Exception ex)
+            {
+                Logger.Log(LogLevel.Error, "GetUploadedEntitiesByPartitionAndAge failed: " + ex);
+                throw;
+            }
         }
 
         /// <summary>
@@ -64,11 +83,19 @@ namespace ImgJar.Services
         /// <returns></returns>
         public static UploadedEntity GetUploadedEntityByRemovalKey(string removalKey)
         {
-            var tableClient = StorageAccount.CreateCloudTableClient();
-            var table = tableClient.GetTableReference("uploads");
-            var query = table.CreateQuery<UploadedEntity>().Where(d => d.PartitionKey == "2017" && d.RemovalKey == Guid.Parse(removalKey));
-            var entityToDelete = query.FirstOrDefault();
-            return entityToDelete;
+            try
+            {
+                var tableClient = StorageAccount.CreateCloudTableClient();
+                var table = tableClient.GetTableReference("uploads");
+                var query = table.CreateQuery<UploadedEntity>().Where(d => d.PartitionKey == "2017" && d.RemovalKey == Guid.Parse(removalKey));
+                var entityToDelete = query.FirstOrDefault();
+                return entityToDelete;
+            }
+            catch (Exception ex)
+            {
+                Logger.Log(LogLevel.Error, "GetUploadedEntityByRemovalKey failed: " + ex);
+                throw;
+            }
         }
 
         /// <summary>
@@ -78,13 +105,21 @@ namespace ImgJar.Services
         /// <returns></returns>
         public static string GetBlobReferenceFromRemovalKey(string removalKey)
         {
-            var entityToDelete = GetUploadedEntityByRemovalKey(removalKey);
+            try
+            {
+                var entityToDelete = GetUploadedEntityByRemovalKey(removalKey);
 
-            var tableClient = StorageAccount.CreateCloudTableClient();
-            var table = tableClient.GetTableReference("uploads");
-            TableOperation retrieveOperation = TableOperation.Retrieve<UploadedEntity>("2017", entityToDelete.RowKey);
-            TableResult retrievedResult = table.Execute(retrieveOperation);
-            return ((UploadedEntity)retrievedResult.Result).RowKey;
+                var tableClient = StorageAccount.CreateCloudTableClient();
+                var table = tableClient.GetTableReference("uploads");
+                TableOperation retrieveOperation = TableOperation.Retrieve<UploadedEntity>("2017", entityToDelete.RowKey);
+                TableResult retrievedResult = table.Execute(retrieveOperation);
+                return ((UploadedEntity)retrievedResult.Result).RowKey;
+            }
+            catch (Exception ex)
+            {
+                Logger.Log(LogLevel.Error, "GetBlobReferenceFromRemovalKey failed: " + ex);
+                throw;
+            }
         }
 
         /// <summary>
@@ -109,7 +144,7 @@ namespace ImgJar.Services
             }
             catch (Exception ex)
             {
-                // TODO: log failed record delete attempt
+                Logger.Log(LogLevel.Error, "DeleteUploadedEntityRecord failed: " + ex);
                 return false;
             }
         }

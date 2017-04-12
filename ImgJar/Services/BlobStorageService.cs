@@ -3,12 +3,15 @@ using System.IO;
 using System.Web;
 using Microsoft.Azure;
 using Microsoft.WindowsAzure.Storage;
+using NLog;
+using LogLevel = NLog.LogLevel;
 
 namespace ImgJar.Services
 {
     public static class BlobStorageService
     {
         private static readonly CloudStorageAccount StorageAccount = CloudStorageAccount.Parse(CloudConfigurationManager.GetSetting("StorageConnectionString"));
+        private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
         /// <summary>
         /// Uploads a file to azure blob storage and returns the blob reference
@@ -18,27 +21,35 @@ namespace ImgJar.Services
         /// <returns></returns>
         public static string SaveBlob(HttpPostedFileBase file, string userIp)
         {
-            // ##############################################
-            // TODO: verify file type & strip EXIF data
-            // ###############################################
-            
-            var blobReference = Convert.ToBase64String(Guid.NewGuid().ToByteArray());
-            blobReference = blobReference.Replace('+', '-').Replace('/', '_');
-            blobReference = blobReference.Substring(0, blobReference.Length - 2) + Path.GetExtension(file.FileName);
-
-            if (file.ContentLength > 0)
+            try
             {
-                var blobClient = StorageAccount.CreateCloudBlobClient();
-                var container = blobClient.GetContainerReference("jar");
-                container.CreateIfNotExists();
-                var blockBlob = container.GetBlockBlobReference(blobReference);
-                blockBlob.UploadFromStream(file.InputStream);
-                blockBlob.Properties.ContentType = file.ContentType;
-                blockBlob.Properties.ContentDisposition = "attachment; filename=" + blobReference;
-                blockBlob.SetProperties();
+                // ##############################################
+                // TODO: verify file type & strip EXIF data
+                // ###############################################
+
+                var blobReference = Convert.ToBase64String(Guid.NewGuid().ToByteArray());
+                blobReference = blobReference.Replace('+', '-').Replace('/', '_');
+                blobReference = blobReference.Substring(0, blobReference.Length - 2) + Path.GetExtension(file.FileName);
+
+                if (file.ContentLength > 0)
+                {
+                    var blobClient = StorageAccount.CreateCloudBlobClient();
+                    var container = blobClient.GetContainerReference("jar");
+                    container.CreateIfNotExists();
+                    var blockBlob = container.GetBlockBlobReference(blobReference);
+                    blockBlob.UploadFromStream(file.InputStream);
+                    blockBlob.Properties.ContentType = file.ContentType;
+                    blockBlob.Properties.ContentDisposition = "attachment; filename=" + blobReference;
+                    blockBlob.SetProperties();
+                }
+
+                return blobReference;
             }
-            
-            return blobReference;
+            catch (Exception ex)
+            {
+                Logger.Log(LogLevel.Error, "SaveBlob failed: " + ex);
+                throw;
+            }
         }
 
         /// <summary>
@@ -48,18 +59,26 @@ namespace ImgJar.Services
         /// <returns></returns>
         public static bool DeleteBlob(string removalKey)
         {
-            var entityToDelete = TableStorageService.GetUploadedEntityByRemovalKey(removalKey);
-            
-            if (entityToDelete != null)
+            try
             {
-                var blobReference = TableStorageService.GetBlobReferenceFromRemovalKey(removalKey);
-                DeleteBlobById(blobReference);
-                TableStorageService.DeleteUploadedEntityRecord(removalKey);
-                return true;
-            }
+                var entityToDelete = TableStorageService.GetUploadedEntityByRemovalKey(removalKey);
 
-            // entity to delete with given removal key was not found
-            return false;
+                if (entityToDelete != null)
+                {
+                    var blobReference = TableStorageService.GetBlobReferenceFromRemovalKey(removalKey);
+                    DeleteBlobById(blobReference);
+                    TableStorageService.DeleteUploadedEntityRecord(removalKey);
+                    return true;
+                }
+
+                // entity to delete with given removal key was not found
+                return false;
+            }
+            catch (Exception ex)
+            {
+                Logger.Log(LogLevel.Error, "DeleteBlob failed: " + ex);
+                throw;
+            }
         }
 
         /// <summary>

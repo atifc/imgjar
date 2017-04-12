@@ -4,6 +4,7 @@ using System.Runtime.Caching;
 using System.Web.Mvc;
 using ImgJar.Services;
 using ImgJar.Services.Models;
+using NLog;
 
 namespace ImgJar.Controllers
 {
